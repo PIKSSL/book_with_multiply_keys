@@ -17,4 +17,8 @@ class Copy extends Model
         'publication',
         'status'
     ];
+
+    public function lending_c(){
+        return $this->hasMany(Lending::class, 'copy_id', 'copy_id');
+    }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\CopyController;
 use App\Http\Controllers\LendingController;
 use App\Http\Controllers\UserController;
+use App\Models\Copy;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,6 +29,7 @@ Route::get('/dashboard', function () {
 //ADMIN
 Route::middleware( ['admin'])->group(function () {
     //books
+    Route::get('/api/books', [BookController::class, 'index']);
     Route::get('/api/books/{id}', [BookController::class, 'show']);
     Route::post('/api/books', [BookController::class, 'store']);
     Route::put('/api/books/{id}', [BookController::class, 'update']);
@@ -44,7 +46,8 @@ Route::middleware( ['admin'])->group(function () {
 
 //SIMPLE USER
 Route::middleware(['auth.basic'])->group(function () {
-    
+
+
     //user   
     Route::apiResource('/api/users', UserController::class);
     Route::patch('/api/users/password/{id}', [UserController::class, 'updatePassword']);
@@ -62,5 +65,12 @@ Route::put('/api/lendings/{user_id}/{copy_id}/{start}', [LendingController::clas
 Route::patch('/api/lendings/{user_id}/{copy_id}/{start}', [LendingController::class, 'update']);
 Route::post('/api/lendings', [LendingController::class, 'store']);
 Route::delete('/api/lendings/{user_id}/{copy_id}/{start}', [LendingController::class, 'destroy']);
-
+//feladatok:
+Route::get('/api/book_copies_count/{title}',[CopyController::class, 'bookCopyCount']);
+Route::get('/api/hardcoveredCopies/{hardcovered}',[CopyController::class, 'hardcoveredCopies']);
+Route::get('/api/givenYear/{year}', [CopyController::class, 'givenYear']);
+Route::get('/api/inStock/{status}',[CopyController::class, 'inStock']);
+Route::get('/api/checkBook/{book_id}/{year}',[CopyController::class, 'bookCheck']);
+Route::get('/api/dataDB/{book_id}',[CopyController::class, 'lendingsDataDB']);
+Route::get('/api/dataWT/{book_id}',[CopyController::class,'lendingsDataWT']);
 require __DIR__.'/auth.php';

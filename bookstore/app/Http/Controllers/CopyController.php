@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\Copy;
+use App\Models\Lending;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CopyController extends Controller
 {
@@ -71,5 +73,64 @@ class CopyController extends Controller
         $copies = Copy::all();
         //copy mappában list blade
         return view('copy.list', ['copies' => $copies]);
+    }
+    //Hány darab példány van egy adott című könyvből?
+    public function bookCopyCount($title){
+        $copies = DB::table('copies as c')
+        ->join('books as b' ,'c.book_id','=','b.book_id') 
+        ->where('b.title','=', $title)
+        ->count();			
+        return $copies;
+    }
+    //dd meg a keménykötésű példányokat szerzővel és címmel! 
+    public function hardcoveredCopies($hardcovered){
+        $copies = DB::table('copies as c')
+        ->select('b.author', 'b.title')
+        ->join('books as b' ,'c.book_id','=','b.book_id') 
+        ->where('c.hardcovered','=', $hardcovered)
+        ->get();
+        return $copies;
+    }
+    //Bizonyos évben kiadott példányok névvel és címmel kiíratása.
+    public function givenYear($year){
+        $copies = DB::table('copies as c')
+        ->select('b.author', 'b.title')
+        ->join('books as b' ,'c.book_id','=','b.book_id') 
+        ->where('c.publication', '=',$year)
+        ->get();
+        return $copies;
+    }
+    //Raktárban lévő példányok száma.
+    public function inStock($status){
+        $copies = DB::table('copies as c')
+        ->select('b.author', 'b.title')
+        ->where('c.status', '=', $status)
+        ->count();
+        return $copies;
+    }
+    //Bizonyos évben kiadott, bizonyos könyv raktárban lévő darabjainak a száma.
+    public function bookCheck($book, $year){
+        $copies = DB::table('copies as c')
+        ->select('b.author', 'b.title')
+        ->join('books as b' ,'c.book_id','=','b.book_id') 
+        ->where('b.book_id', '=',$book)
+        ->where('c.publication', '=',$year)
+        ->where('c.status', '=', 0)
+        ->count();
+        return $copies;
+    }
+    //Adott könyvhöz tartozó példányok kölcsönzési adatai (with-del és DB-vel is).
+    public function lendingsDataDB($book){
+        $lending = DB::table('copies as c')
+        ->select('l.user_id','l.copy_id','l.start')
+        ->join('books as b' ,'c.book_id','=','b.book_id') 
+        ->join('lendings as l', 'c.copy_id', '=','l.copy_id')
+        ->where('b.book_id', '=',$book)
+        ->get();
+        return $lending;
+    }
+    public function lendingsDataWT($book){  
+        $lending = Copy::with('lending_c')->where('book_id','=',$book)->get();
+        return $lending;
     }
 }
